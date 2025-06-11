@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Parshvanath's ideologies</title>
+  <style>
+    body,
+    html {
+      margin: 0;
+      padding: 0;
+      font-family: helvetica;
+      height: 500vh; /* Create scrollable height */
+    }
+
+    video {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      object-fit: cover;
+      z-index: 1;
+    }
+
+    .button-container {
+      position: fixed;
+      bottom: 5%;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 2;
+    } 
+
+    .button {
+      width: 60px;
+      height: 60px;
+      padding: 0;
+      background: rgba(255, 255, 255, 0.1);
+      border: 2px solid white;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      backdrop-filter: blur(5px);
+      cursor: pointer;
+      transition: all 0.3s ease;
+      color: white;
+    }
+
+    .button:hover {
+      background: rgba(255, 255, 255, 0.3);
+      border-color: #fff;
+      box-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
+      transform: scale(1.1);
+    }
+
+    .button:active {
+      transform: scale(0.95);
+    }
+
+    .button svg {
+      width: 24px;
+      height: 24px;
+      fill: white;
+    }
+  </style>
+</head>
+
+<body>
+  <video id="scrollVideo" src="ParshvanathScrolly_Paras.mp4" muted tabindex="0" autobuffer="autobuffer" preload="preload"></video>
+
+  <div class="button-container">
+    <button class="button" onClick="scrollNext()">
+    </button>
+  </div> 
+
+  <script>
+    let currentSection = 0;
+    
+    // Video timing - adjust these values based on your video content
+    const videoTimestamps = [
+      0,     // Section 1 starts at 0 seconds
+      15,    // Section 2 starts at 15 seconds
+      30,    // Section 3 starts at 30 seconds
+      45,    // Section 4 starts at 45 seconds
+      60,    // Section 5 starts at 60 seconds
+      75     // Section 6 starts at 75 seconds
+    ];
+
+    const video = document.getElementById('scrollVideo');
+    
+    // Set initial video time
+    video.addEventListener('loadedmetadata', function() {
+      video.currentTime = videoTimestamps[0];
+    });
+
+    function scrollNext() {
+      const targetTime = videoTimestamps[currentSection];
+      
+      // Animate video to the corresponding timestamp
+      animateVideoTo(targetTime);
+      
+      // Move to next section, loop back to start if at the end
+      currentSection = (currentSection + 1) % videoTimestamps.length;
+    }
+
+    function animateVideoTo(targetTime) {
+      const currentTime = video.currentTime;
+      const duration = 1.5; // Animation duration in seconds
+      const startTime = performance.now();
+      
+      function animate(now) {
+        const elapsed = (now - startTime) / 1000;
+        const progress = Math.min(elapsed / duration, 1);
+        
+        // Smooth easing function
+        const easeProgress = progress < 0.5 
+          ? 2 * progress * progress
+          : 1 - Math.pow(-2 * progress + 2, 3) / 2;
+        
+        video.currentTime = currentTime + (targetTime - currentTime) * easeProgress;
+        
+        if (progress < 1) {
+          requestAnimationFrame(animate);
+        }
+      }
+      
+      requestAnimationFrame(animate);
+    }
+
+    // Manual scroll-based video control
+    let ticking = false;
+    
+    function updateVideoOnScroll() {
+      const scrollPercent = window.pageYOffset / (document.documentElement.scrollHeight - window.innerHeight);
+      const videoDuration = video.duration || 90; // fallback duration
+      
+      if (!isNaN(videoDuration)) {
+        video.currentTime = scrollPercent * videoDuration;
+        
+        // Update current section based on video time
+        for (let i = videoTimestamps.length - 1; i >= 0; i--) {
+          if (video.currentTime >= videoTimestamps[i]) {
+            currentSection = (i + 1) % videoTimestamps.length;
+            break;
+          }
+        }
+      }
+      
+      ticking = false;
+    }
+
+    // Enable manual scrolling
+    window.addEventListener('scroll', function() {
+      if (!ticking) {
+        requestAnimationFrame(updateVideoOnScroll);
+        ticking = true;
+      }
+    });
+
+    // Optional: Add keyboard navigation
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'ArrowDown' || e.key === ' ') {
+        e.preventDefault();
+        scrollNext();
+      }
+    });
+  </script>
+</body>
+
+</html>
